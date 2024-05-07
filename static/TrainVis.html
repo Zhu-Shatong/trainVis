@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html style="height: 100%">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>TrainVis</title>
+    <script src="./static/js/jquery-3.6.0.js"></script>
+    <script type="text/javascript"
+        src="https://cdn.jsdelivr.net/npm/echarts-nightly@5.1.2-dev.20210512/dist/echarts.min.js"></script>
+    <script type="text/javascript"
+        src="https://api.map.baidu.com/api?v=3.0&ak=oW6rKW22HTQjgpFGsRqhfspazDpwYaPy"></script>
+    <script type="text/javascript" src="./static/js/bmap.js"></script>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
+</head>
+
+<!-- 导航栏 -->
+<nav class="navbar navbar-expand-lg bg-dark navbar-dark" style="height: 8%; font-size: 20px; text-align:center">
+    <a class="navbar-brand mr-auto" href="/" style="font-size: 25px">TrainVis</a>
+    <ul class="navbar-nav ml-auto">
+        <li class="nav-item">
+            <a class="nav-link" href="/StationVis">StationVis</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link active" href="/TrainVis">TrainVis</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/AccessVis">AccessVis</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/ChartVis">ChartVis</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/PathVis">PathVis</a>
+        </li>
+    </ul>
+</nav>
+
+<body style="height: 92%; margin: 0">
+    <div id="main" style="height: 100%; margin: 0"></div>
+    <script type="text/javascript">
+
+        var chartDom = document.getElementById('main');
+        var myChart = echarts.init(chartDom);
+        var option;
+        // 筛去部分高德地图定位有错误的点
+        var banList = ["董家口","老城镇","大明湖","白洋淀","军粮城北","城西","棋子湾","盘州","滨海","滨海北","金月湾","尖峰","乐东","黄流","兴隆镇","哈达铺","马兰","查干湖","尖山","临高南","谷山","白河","花园口","亚布力西","徐家店","昆玉", "观沙岭", "夏格庄", "杜拉尔", "沈家", "松江河", "松江南", "绥阳","大石头南", "东方红","东方","兴安北"];
+        var banSet = new Set(banList);
+
+        $.get('static/data/StationInfo.json', function (data)
+        {
+
+            var station_points = [].concat(data.map(function (track)
+            {
+                var ls = [track.lon, track.lat];
+                if (track.trains == undefined)
+                    ls.push([]);
+                else
+                    ls.push(Object.values(track.trains).length);
+                //alert(track.trains);
+                var dic = { name: track.name, value: ls };
+                return dic;
+            }));
+            // 按value排序
+            station_points = station_points.sort(function (a, b)
+            {
+                return b.value[2] - a.value[2];
+            }).splice(0, 1500);
+            var validLs = [];
+            for(var i = 0; i < station_points.length; i++)
+                validLs.push(station_points[i].name);
+            var validSet = new Set(validLs);
+
+            $.get('/static/data/MergedTrainInfo.json', function (trainData) 
+            {
+                $.get('/static/data/StationGeo.json', function (stationGeo) 
+                {
+                    trainData = trainData.sort(function (a, b)
+                    {
+                        return b.forward.length - a.forward.length + b.backward.length - a.backward.length;
+                    });
+                    console.log(trainData)
+                    var max_value = trainData[0].forward.length + trainData[0].backward.length;
+                    var hStep = 300 / (trainData.length - 1);
+                    var trainLines = [];
+                    for (var idx = 0; idx < trainData.length; idx++) 
+                    {
+                        var stations = trainData[idx].stations;
+                        var points = [];
+                        var prev = [];
+                        var next = [];
+                        var cur = [];
+                        var value = trainData[idx].forward.length + trainData[idx].backward.length;
+                        for (var i = 0; i < stations.length; i++)
+                        {
+                            // 去除没有爬取成功的车站
+                            if (stationGeo[stations[i]] != undefined && validSet.has(stations[i])&& !banSet.has(stations[i]))
+                            {
+                                cur = stationGeo[stations[i]];
+                                //cur.push(value);
+                                if (cur.length == 2)
+                                    points.push(cur);
+                            }
+                        }
+                        // 若一条线路上只有一个点，则不进行绘制
+                        if (points.length <= 1)
+                            continue;
+                        trainLines.push({
+                            coords: points,
+                            lineStyle: {
+                                normal: {
+                                    color: echarts.color.modifyHSL('#5A94DF',
+                                        Math.round(hStep * idx)),
+                                    //width: Math.log2(value)
+                                }
+                            }
+                        });
+                    }
+
+                    var map_style = [];
+                    $.get('static/data/MapStyleConfig.json', function (map_style_data)
+                    {
+                        map_style = Object.values(map_style_data);
+                        myChart.setOption(option = {
+                            bmap: {
+                                // center: [116.46, 39.92],
+                                // zoom: 10,
+                                center: [104.114129, 37.550339],
+                                zoom: 6,
+                                roam: true,
+                                mapStyle: {
+                                    'styleJson': map_style
+                                }
+                            },
+                            series: [
+                                {
+                                    type: 'scatter',
+                                    coordinateSystem: 'bmap',
+                                    data: station_points,
+                                    symbolSize: function (val)
+                                    {
+                                        return 5;
+                                    },
+                                    encode: {
+                                        value: 2
+                                    },
+                                    label: {
+                                        formatter: '{b}',
+                                        position: 'right',
+                                        show: false
+                                    },
+                                    emphasis: {
+                                        label: {
+                                            show: true
+                                        }
+                                    }
+                                },
+                                {
+                                    type: 'lines',
+                                    coordinateSystem: 'bmap',
+                                    polyline: true,
+                                    data: trainLines,
+                                    //silent: true,
+                                    lineStyle: {
+                                        //color: '#c23531',
+                                        //color: 'rgb(200, 35, 45)',
+                                        opacity: 0.1,
+                                        width: 2
+                                    },
+                                    // progressiveThreshold: 5000,
+                                    // progressive: 200
+                                },
+                                {
+                                    type: 'lines',
+                                    coordinateSystem: 'bmap',
+                                    polyline: true,
+                                    data: trainLines,
+                                    lineStyle: {
+                                        width: 0
+                                    },
+                                    effect: {
+                                        constantSpeed: 20,
+                                        show: true,
+                                        trailLength: 0.1,
+                                        symbolSize: 2.5,
+                                        symbol: "circle",
+                                        loop: true
+                                    },
+                                    zlevel: 1
+                                }
+                            ]
+                        });
+                    });
+                })
+            });
+            option && myChart.setOption(option);
+        })
+
+    </script>
+</body>
+
+</html>
