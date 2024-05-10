@@ -5,8 +5,6 @@ import pydeck as pdk
 import streamlit as st
 
 
-
-
 # 加载车站地理位置信息
 @st.cache_data
 def load_station_geo():
@@ -101,8 +99,6 @@ if __name__ == '__main__':
 
     # 设置页面配置
     st.set_page_config(layout="wide", page_title="列车出发时间与位置", page_icon=":train:")
-
-
 
 
 
