@@ -1,5 +1,3 @@
-from urllib.request import urlopen
-
 import matplotlib.pyplot as plt
 import pandas as pd
 
