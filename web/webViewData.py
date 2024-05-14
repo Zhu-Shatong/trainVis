@@ -2,17 +2,20 @@ import streamlit as st
 import pandas as pd
 from datetime import time
 
+
 @st.cache_data
 def load_data():
     # 读取CSV文件
-    df = pd.read_csv('data/sh_price_info.csv')
+    df = pd.read_csv('data\sh_price_info_with_distance.csv')
     # 转换 start_time 列为 datetime 类型并去除秒数
-    df['start_time'] = pd.to_datetime(df['start_time'], format='%H:%M:%S').dt.strftime('%H:%M')
+    df['start_time'] = pd.to_datetime(
+        df['start_time'], format='%H:%M:%S').dt.strftime('%H:%M')
     df['start_time'] = pd.to_datetime(df['start_time'], format='%H:%M').dt.time
     return df
-    
+
+
 def show_filtered_data(df):
-    st.dataframe(df.style.highlight_max(axis=0)) 
+    st.dataframe(df.style.highlight_max(axis=0))
     # Convert the DataFrame to CSV format and create a download button
     csv = df.to_csv().encode('utf-8')
     st.download_button(
@@ -21,8 +24,6 @@ def show_filtered_data(df):
         file_name='filtered_data.csv',
         mime='text/csv',
     )
-    
-    
 
 
 def filter_data(df, expanded=True):
@@ -37,14 +38,16 @@ def filter_data(df, expanded=True):
         # 使用时间滑块选择时间范围
         min_time = time(0, 0)
         max_time = time(23, 59)
-        time_range = st.slider("选择时间区间", value=(min_time, max_time), format="HH:mm")
-        df = df[(df['start_time'] >= time_range[0]) & (df['start_time'] <= time_range[1])]
+        time_range = st.slider("选择时间区间", value=(
+            min_time, max_time), format="HH:mm")
+        df = df[(df['start_time'] >= time_range[0]) &
+                (df['start_time'] <= time_range[1])]
 
         col1, col2 = st.columns(2)
         with col1:
-        # 选择座位等级和价格区间
-            seat_classes = ['business_seat', 'first_class_seat', 'second_class_seat', 
-                            'premium_soft_sleeper', 'soft_sleeper', 'hard_sleeper', 
+            # 选择座位等级和价格区间
+            seat_classes = ['business_seat', 'first_class_seat', 'second_class_seat',
+                            'premium_soft_sleeper', 'soft_sleeper', 'hard_sleeper',
                             'soft_seat', 'hard_seat', 'standing_ticket']
             seat_class = st.selectbox("选择座位等级", options=[''] + seat_classes)
         with col2:
@@ -52,9 +55,10 @@ def filter_data(df, expanded=True):
                 min_price = df[seat_class].min()
                 max_price = df[seat_class].max()
                 if pd.notna(min_price) and pd.notna(max_price):
-                    price_range = st.slider("选择价格区间", min_value=float(min_price), max_value=float(max_price), 
+                    price_range = st.slider("选择价格区间", min_value=float(min_price), max_value=float(max_price),
                                             value=(float(min_price), float(max_price)))
-                    df = df[(df[seat_class] >= price_range[0]) & (df[seat_class] <= price_range[1])]
+                    df = df[(df[seat_class] >= price_range[0]) &
+                            (df[seat_class] <= price_range[1])]
             else:
                 st.warning("请选择座位等级以选择价格区间")
 
@@ -84,7 +88,8 @@ def filter_data(df, expanded=True):
 
         # 一键清空筛选规则按钮
         if st.button("清空筛选"):
-            keys_to_reset = ['departure_station', 'arrival_station', 'time_range', 'seat_class', 'price_range']
+            keys_to_reset = ['departure_station', 'arrival_station',
+                             'time_range', 'seat_class', 'price_range']
             for key in keys_to_reset:
                 if key in st.session_state:
                     del st.session_state[key]
@@ -95,14 +100,11 @@ def filter_data(df, expanded=True):
 
     return df
 
+
 if __name__ == '__main__':
-    
+
     st.title('数据集')
-    tab1, tab2= st.tabs(["📈 上海高铁详细数据", "🤣 全国高铁数据"])
-    
-    
-    with tab1:
-        df = load_data()
-        filtered_df = filter_data(df)
-        show_filtered_data(filtered_df)
-    
+
+    df = load_data()
+    filtered_df = filter_data(df)
+    show_filtered_data(filtered_df)
