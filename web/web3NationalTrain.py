@@ -8,7 +8,7 @@ if __name__ == '__main__':
     st.set_page_config(layout="wide", page_title="全国高铁线路可视化",
                        page_icon=":train:")
 
-    st.title('全国高铁线路可视化')
+    st.title('🚆全国高铁线路可视化')
     tab1, tab2 = st.tabs(["📈 高铁线路全国分布图", "🌐 网络图"])
 
     with tab1:

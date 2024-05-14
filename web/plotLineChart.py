@@ -116,7 +116,7 @@ def plot_five_minute_intervals():
 
     # 更新布局
     fig.update_layout(
-        title='Traffic Counts in 5-Minute Intervals',
+        title='Traffic Counts in Minute Intervals',
         xaxis_title='Five-Minute Interval',
         yaxis_title='Count',
         xaxis=dict(

@@ -9,7 +9,7 @@ if __name__ == '__main__':
     st.set_page_config(layout="wide", page_title="上海高铁数据-时间可视化",
                        page_icon=":date:")
 
-    st.title('上海高铁数据-时间可视化')
+    st.title('🚉上海高铁数据-时间可视化')
 
     st.title('24小时观测')
 

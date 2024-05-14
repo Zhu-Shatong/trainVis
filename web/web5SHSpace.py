@@ -11,7 +11,6 @@ from plotStack import plot_train_stack
 from plotCircle import create_nested_donut_chart
 
 
-
 def load_train_data():
     train_data = load_sh_price_info_with_distance()
     station_geo = pd.read_csv("data\station_geo.csv", index_col="station")
@@ -76,7 +75,7 @@ if __name__ == '__main__':
     st.set_page_config(layout="wide", page_title="上海高铁数据-空间可视化",
                        page_icon=":train:")
 
-    st.title('上海高铁数据-空间可视化')
+    st.title('🚈上海高铁数据-空间可视化')
     tab1, tab2 = st.tabs(["全国视角", "上海视角"])
 
     with tab1:
@@ -101,7 +100,6 @@ if __name__ == '__main__':
 
         with row1_2:
             st.write("""
-            ##
             观察全国及其主要区域的数据
             通过左侧滑块选择不同的时间段，探索不同的抵达趋势。
             """)
@@ -138,8 +136,11 @@ if __name__ == '__main__':
                 ['arrival_station', 'lon', 'lat']).size().reset_index(name='count'), newark[0], newark[1], zoom_level)
 
     with tab2:
+        st.subheader("玫瑰图")
         st.plotly_chart(plot_rose(), use_container_width=True, theme=None)
+        st.subheader("环形图")
         st.plotly_chart(create_nested_donut_chart(),
                         use_container_width=True, theme=None)
+        st.subheader("堆叠柱状图")
         st.plotly_chart(plot_train_stack(),
                         use_container_width=True, theme=None)

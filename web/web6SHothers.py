@@ -81,7 +81,7 @@ if __name__ == '__main__':
     # 设置页面配置
     st.set_page_config(layout="wide", page_title="上海高铁数据-时距速价综合",
                        page_icon=":mag:")
-    st.title('上海高铁数据-时距速价综合')
+    st.title('🚂上海高铁数据-时距速价综合')
 
     # 读取CSV文件
     df = pd.read_csv("data/sh_price_info_with_distance.csv")
@@ -111,10 +111,14 @@ if __name__ == '__main__':
 
     df['speed'] = df["distance_km"] / df['duration_minutes'] * 60
 
+    st.subheader("相关性热力图")
+
     st.plotly_chart(correlation_heatmap(df),
                     use_container_width=True, theme=None)
 
     # 界面布局中间区域的地图显示
+
+    st.subheader("提琴图")
 
     log_box = st.radio(
         "点击下方按钮对y轴取对数",
@@ -133,6 +137,8 @@ if __name__ == '__main__':
     fig = violin_plot(
         df, ["business_seat", "first_class_seat", "second_class_seat", "soft_sleeper", "hard_sleeper",  "hard_seat"], log_box)
     st.plotly_chart(fig, use_container_width=True, theme=None)
+
+    st.subheader("散点气泡图")
 
     st.plotly_chart(sca_dur_dis(df), use_container_width=True, theme=None)
     st.plotly_chart(sca_price_dis(df), use_container_width=True, theme=None)

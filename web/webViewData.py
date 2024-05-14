@@ -11,13 +11,37 @@ def load_data():
     df['start_time'] = pd.to_datetime(
         df['start_time'], format='%H:%M:%S').dt.strftime('%H:%M')
     df['start_time'] = pd.to_datetime(df['start_time'], format='%H:%M').dt.time
+
+    df['end_time'] = pd.to_datetime(
+        df['end_time'], format='%H:%M:%S').dt.strftime('%H:%M')
+    df['end_time'] = pd.to_datetime(df['end_time'], format='%H:%M').dt.time
+
     return df
 
 
 def show_filtered_data(df):
-    st.dataframe(df.style.highlight_max(axis=0))
+
+    df2 = df[["train_number", 'start_station',
+              'end_station', 'departure_station', 'arrival_station', 'start_time', 'end_time', 'duration', 'first_class_seat', 'second_class_seat']]
+
+    # 按照start_time和end_time排序
+    df2 = df2.sort_values(by=['start_time', 'end_time'])
+
+    # 定义高亮最小值的函数
+
+    def highlight_min(s):
+        is_min = s == s.min()
+        return ['background-color: yellow' if v else '' for v in is_min]
+
+    # 对特定列高亮最小值
+    styled_df2 = df2.style.apply(highlight_min, subset=[
+        'start_time', 'end_time', 'duration', 'first_class_seat', 'second_class_seat'])
+
+    # 显示数据框
+    st.dataframe(styled_df2)
+
     # Convert the DataFrame to CSV format and create a download button
-    csv = df.to_csv().encode('utf-8')
+    csv = df2.to_csv().encode('utf-8')
     st.download_button(
         label="下载筛选后的数据",
         data=csv,
@@ -103,7 +127,10 @@ def filter_data(df, expanded=True):
 
 if __name__ == '__main__':
 
-    st.title('数据集')
+    # 设置页面配置
+    st.set_page_config(layout="wide", page_title="查询功能",
+                       page_icon=":mag:")
+    st.title('查询功能')
 
     df = load_data()
     filtered_df = filter_data(df)

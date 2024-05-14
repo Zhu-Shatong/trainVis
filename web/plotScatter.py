@@ -42,9 +42,9 @@ def sca_price_dis(df):
 
     # 设置图表布局
     fig.update_layout(
-        title="Train Duration vs. Distance",
+        title="Price vs. Distance",
         xaxis_title="Distance (km)",
-        yaxis_title="Duration (minutes)",
+        yaxis_title="Price (yuan)",
         hovermode="closest",
         height=900,
         xaxis=dict(
@@ -73,9 +73,9 @@ def sca_speed_dis(df):
 
     # 设置图表布局
     fig.update_layout(
-        title="Train Duration vs. Distance",
+        title="Speed vs. Distance",
         xaxis_title="Distance (km)",
-        yaxis_title="Duration (minutes)",
+        yaxis_title="Speed (km/h)",
         hovermode="closest",
         height=900,
         xaxis=dict(
