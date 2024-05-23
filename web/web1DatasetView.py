@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 from datetime import time
 import streamlit.components.v1 as components
+from PIL import Image
 
 from plotDataset import Dataset_TreeMap
 
@@ -22,3 +23,7 @@ if __name__ == '__main__':
     st.subheader("树图")
 
     st.plotly_chart(Dataset_TreeMap(), use_container_width=True, theme=None)
+
+    st.subheader("树状图")
+    image = Image.open('static/mind.png')
+    st.image(image, caption='思维导图', use_column_width=True)
